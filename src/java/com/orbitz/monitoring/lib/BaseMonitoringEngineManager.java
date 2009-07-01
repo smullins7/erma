@@ -63,12 +63,12 @@ public class BaseMonitoringEngineManager {
         MonitoringEngine.getInstance().setStartupRunnable(_startupRunnable);
 
         if (_timerTasks == null) {
-            _timerTasks = Collections.EMPTY_MAP;
+            _timerTasks = Collections.emptyMap();
         }
 
         MonitoringEngine.getInstance().startup();
 
-        EventMonitor monitor = new EventMonitor("MonitoringEngineManager.lifecycle", MonitoringLevel.ESSENTIAL);
+        EventMonitor monitor = new EventMonitor("Lifecycle", MonitoringLevel.ESSENTIAL);
         monitor.set("eventType", "startup");
         monitor.fire();
 
@@ -90,7 +90,7 @@ public class BaseMonitoringEngineManager {
     public void shutdown() {
         _scheduledExecutor.shutdown();
 
-        EventMonitor monitor = new EventMonitor("MonitoringEngineManager.lifecycle", MonitoringLevel.ESSENTIAL);
+        EventMonitor monitor = new EventMonitor("Lifecycle", MonitoringLevel.ESSENTIAL);
         monitor.set("eventType", "shutdown");
         monitor.fire();
 
@@ -98,7 +98,7 @@ public class BaseMonitoringEngineManager {
     }
 
     public void reload() {
-        EventMonitor monitor = new EventMonitor("MonitoringEngineManager.lifecycle", MonitoringLevel.ESSENTIAL);
+        EventMonitor monitor = new EventMonitor("Lifecycle", MonitoringLevel.ESSENTIAL);
         monitor.set("eventType", "reload");
         monitor.fire();
 
@@ -121,7 +121,7 @@ public class BaseMonitoringEngineManager {
 
     public Collection getTimerTasks() {
         return (_timerTasks != null && _timerTasks.containsKey(new Integer(60000))) ?
-                (Collection) _timerTasks.get(new Integer(60000)) : Collections.EMPTY_SET;
+                (Collection) _timerTasks.get(new Integer(60000)) : Collections.emptySet();
     }
 
     /**

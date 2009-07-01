@@ -16,13 +16,11 @@ import java.util.TimerTask;
  */
 public class HeartbeatTimerTask extends TimerTask {
 
-
     /**
      * Sends a heartbeat event.
      */
     public void run() {
-
-        EventMonitor monitor = new EventMonitor("MonitoringEngineManager.lifecycle", MonitoringLevel.ESSENTIAL);
+        EventMonitor monitor = new EventMonitor("Lifecycle", MonitoringLevel.ESSENTIAL);
         monitor.set("eventType", "heartbeat");
         monitor.fire();
     }
