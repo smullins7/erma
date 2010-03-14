@@ -27,6 +27,7 @@ import java.util.Set;
 public abstract class AbstractCompositeMonitor extends AbstractMonitor
         implements CompositeMonitor {
 
+    // a set of classes that are known to be serializable
     private static final Set SERIALIZABLE;
     static {
         final Set set = new HashSet();
@@ -45,27 +46,160 @@ public abstract class AbstractCompositeMonitor extends AbstractMonitor
 
     private List _childMonitors = new LinkedList();
 
+    /**
+     * Create a new composite monitor with the provided
+     * name.
+     *
+     * @param name the name of the monitor
+     */
     public AbstractCompositeMonitor(String name) {
-        super(name);
-
-        MonitoringEngine.getInstance().compositeMonitorStarted(this);
+        this(name, MonitoringLevel.INFO, null);
     }
 
+    /**
+     * Create a new composite monitor with the provided
+     * name and monitoring level.
+     *
+     * @param name the name of the monitor
+     * @param monitoringLevel the monitoring level
+     */
     public AbstractCompositeMonitor(String name, MonitoringLevel monitoringLevel) {
-        super(name, monitoringLevel);
-
-        MonitoringEngine.getInstance().compositeMonitorStarted(this);
+        this(name, monitoringLevel, null);
     }
 
+    /**
+     * Create a new composite monitor with the provided
+     * name and inherited attributes.
+     *
+     * @param name the name of the monitor
+     * @param inheritedAttributes the collection of inherited attributes
+     */
     public AbstractCompositeMonitor(String name, Map inheritedAttributes) {
         this(name, MonitoringLevel.INFO, inheritedAttributes);
     }
 
+    /**
+     * Create a new composite monitor with the provided
+     * name, monitoring level and inherited attributes.
+     *
+     * @param name the name of the monitor
+     * @param monitoringLevel the monitoring level
+     * @param inheritedAttributes the collection of inherited attributes
+     */
     public AbstractCompositeMonitor(String name, MonitoringLevel monitoringLevel, Map inheritedAttributes) {
-        super();
+        super(name, monitoringLevel, inheritedAttributes);
 
-        this._monitoringLevel = monitoringLevel;
+        MonitoringEngine.getInstance().compositeMonitorStarted(this);
+    }
 
+    /**
+     * Add a monitor as a child.
+     *
+     * @param monitor the child monitor
+     */
+    public void addChildMonitor(Monitor monitor) {
+        _childMonitors.add(monitor);
+    }
+
+    /**
+     * Get the collection of child monitors.
+     *
+     * @return the collection of child monitors
+     */
+    public Collection getChildMonitors() {
+        return _childMonitors;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, Object value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, byte value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, int value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, long value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, float value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, double value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, char value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public CompositeAttributeHolder setInheritable(String key, boolean value) {
+        CompositeAttributeHolder holder = ((CompositeAttributeHolder) attributes.set(key, value)).setInheritable(true);
+        MonitoringEngine.getInstance().setInheritable(this, key, holder);
+        return holder;
+    }
+
+    public Map getInheritableAttributes() {
+        CompositeAttributeMap compositeMap = (CompositeAttributeMap) attributes;
+
+        return compositeMap.getAllInheritable();
+    }
+
+    public Map getInheritableAttributeHolders() {
+        CompositeAttributeMap compositeMap = (CompositeAttributeMap) attributes;
+
+        return compositeMap.getAllInheritableAttributeHolders();
+    }
+
+    /**
+     * Get a serializable version of this monitor. Also creates
+     * serialized versions of any child monitors.
+     *
+     * @return the serializable monitor
+     */
+    public SerializableMonitor getSerializableMomento() {
+        List childMomentos = new ArrayList(_childMonitors.size());
+        Iterator it = _childMonitors.iterator();
+        while (it.hasNext()) {
+            Monitor monitor = (Monitor) it.next();
+            childMomentos.add(monitor.getSerializableMomento());
+        }
+
+        MonitoringEngine engine = MonitoringEngine.getInstance();
+        Map serializableAttributes = engine.makeAttributeHoldersSerializable(attributes.getAllAttributeHolders());
+
+        SerializableCompositeMonitor monitor = new SerializableCompositeMonitor(null,childMomentos);
+        monitor.setAllAttributeHolders(serializableAttributes);
+
+        return monitor;
+    }
+
+    /**
+     * Used to set the inherited attributes on this
+     * monitor.
+     *
+     * @param inheritedAttributes the collection of inherited attributes
+     */
+    protected void setInheritedAttributes(Map inheritedAttributes) {
         if(inheritedAttributes != null) {
             for (Iterator i = inheritedAttributes.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry) i.next();
@@ -80,81 +214,11 @@ public abstract class AbstractCompositeMonitor extends AbstractMonitor
                 }
             }
         }
-
-        init(name);
-
-        MonitoringEngine.getInstance().compositeMonitorStarted(this);
     }
 
-    public void addChildMonitor(Monitor monitor) {
-        _childMonitors.add(monitor);
-    }
-
-    public Collection getChildMonitors() {
-        return _childMonitors;
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, Object value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value)).setInheritable(true);
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, byte value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value).serializable()).setInheritable(true);
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, int value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value).serializable()).setInheritable(true);
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, long value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value).serializable()).setInheritable(true);
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, float value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value).serializable()).setInheritable(true);
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, double value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value).serializable()).setInheritable(true);
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, char value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value).serializable()).setInheritable(true);
-    }
-
-    public CompositeAttributeHolder setInheritable(String key, boolean value) {
-        return ((CompositeAttributeHolder)_attributes.set(key, value).serializable()).setInheritable(true);
-    }
-
-    public Map getInheritableAttributes() {
-        CompositeAttributeMap compositeMap = (CompositeAttributeMap)_attributes;
-
-        return compositeMap.getAllInheritable();
-    }
-
-    public Map getInheritableAttributeHolders() {
-        CompositeAttributeMap compositeMap = (CompositeAttributeMap)_attributes;
-
-        return compositeMap.getAllInheritableAttributeHolders();
-    }
-
-    public SerializableMonitor getSerializableMomento() {
-        List childMomentos = new ArrayList(_childMonitors.size());
-        Iterator it = _childMonitors.iterator();
-        while (it.hasNext()) {
-            Monitor monitor = (Monitor) it.next();
-            childMomentos.add(monitor.getSerializableMomento());
-        }
-
-        MonitoringEngine engine = MonitoringEngine.getInstance();
-        Map serializableAttributes = engine.makeAttributeHoldersSerializable(_attributes.getAllAttributeHolders());
-
-        SerializableCompositeMonitor monitor = new SerializableCompositeMonitor(null,childMomentos);
-        monitor.setAllAttributeHolders(serializableAttributes);
-
-        return monitor;
-    }
-
+    /**
+     * Process this composite monitor. Delegates to AbstractMonitor.process().
+     */
     protected void process() {
         MonitoringEngine.getInstance().compositeMonitorCompleted(this);
         super.process();

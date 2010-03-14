@@ -2,7 +2,7 @@ package com.orbitz.monitoring.api.monitor;
 
 import com.orbitz.monitoring.api.AttributeUndefinedException;
 import com.orbitz.monitoring.api.CantCoerceException;
-import edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
@@ -104,12 +104,14 @@ public class AttributeMap implements Serializable {
             String key = (String) entry.getKey();
             Object value = entry.getValue();
 
-            if (AttributeHolder.class.isAssignableFrom(value.getClass())) {
-                AttributeHolder original = (AttributeHolder) value;
-                AttributeHolder copy = (AttributeHolder) original.clone();
-                getAttributes().put(key, copy);
-            } else {
-                set(key, value);
+            if(value != null) {
+                if (AttributeHolder.class.isAssignableFrom(value.getClass())) {
+                    AttributeHolder original = (AttributeHolder) value;
+                    AttributeHolder copy = (AttributeHolder) original.clone();
+                    getAttributes().put(key, copy);
+                } else {
+                    set(key, value);
+                }
             }
         }
     }
